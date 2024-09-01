@@ -2,10 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea*
 *.iws
 *.iml
 *.ipr
@@ -29,3 +26,7 @@ build/
 *.pem
 *.key
 *.crt
+tmp.md
+chronicles.md
+final.md
+.doc/
