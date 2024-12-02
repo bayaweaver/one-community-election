@@ -1,9 +1,12 @@
 package org.bayaweaver.oce.administration.domain.model;
 
-public abstract class Entity {
-    private final int id;
+public abstract class Entity<T extends Identifier> {
+    protected final T id;
 
-    public Entity(int id) {
+    public Entity(T id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Identifier must be provided.");
+        }
         this.id = id;
     }
 
@@ -15,12 +18,12 @@ public abstract class Entity {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Entity other = (Entity) o;
-        return id == other.id;
+        Entity<?> other = (Entity<?>) o;
+        return id.equals(other.id);
     }
 
     @Override
     public final int hashCode() {
-        return id;
+        return id.hashCode();
     }
 }
