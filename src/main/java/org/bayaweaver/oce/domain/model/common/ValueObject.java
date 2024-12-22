@@ -1,4 +1,4 @@
-package org.bayaweaver.oce.common;
+package org.bayaweaver.oce.domain.model.common;
 
 public interface ValueObject {
 
