@@ -2,17 +2,17 @@ package org.bayaweaver.oce.domain.model;
 
 import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
 import org.bayaweaver.oce.domain.model.common.Entity;
+import org.bayaweaver.oce.domain.model.common.SingleAggregateRoot;
 
 import java.time.Clock;
 import java.time.Year;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CommunityElections extends Entity<CommunityElectionsId> {
+public class CommunityElections extends SingleAggregateRoot {
     private final Map<Year, Map<CongregationId, Election>> elections;
 
     public CommunityElections() {
-        super(CommunityElectionsId.SINGLE_VALUE);
         this.elections = new HashMap<>();
     }
 
