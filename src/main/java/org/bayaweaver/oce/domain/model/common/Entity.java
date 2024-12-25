@@ -10,6 +10,10 @@ public abstract class Entity<T extends Identifier> {
         this.id = id;
     }
 
+    public T id() {
+        return id;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) {
