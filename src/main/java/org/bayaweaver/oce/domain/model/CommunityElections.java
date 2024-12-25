@@ -51,6 +51,14 @@ public class CommunityElections extends SingleAggregateRoot {
         currentElections.put(initiator, e);
     }
 
+    public void registerMember(MemberId id, int age, CongregationId homeCongregation) {
+        Member m = new Member(id, age, homeCongregation);
+        if (members.contains(m)) {
+            throw new IllegalArgumentException("Член общины '" + id + "' уже зарегистрирован.");
+        }
+        members.add(m);
+    }
+
     public class Election extends Entity<ElectionId> {
         private final CongregationId initiator;
         private final OnlineVoting onlineVoting;
