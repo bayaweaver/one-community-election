@@ -6,7 +6,6 @@ import org.bayaweaver.oce.domain.model.common.SingleAggregateRoot;
 
 import java.time.Clock;
 import java.time.Year;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,10 +15,12 @@ import java.util.Set;
 public class CommunityElections extends SingleAggregateRoot {
     private final Map<Year, Map<CongregationId, Election>> elections;
     private final Set<Member> members;
+    private final Map<CongregationId, Congregation> congregations;
 
     public CommunityElections() {
         this.elections = new HashMap<>();
         this.members = new HashSet<>();
+        this.congregations = new HashMap<>();
     }
 
     public Optional<Election> election(ElectionId id) {
@@ -47,41 +48,59 @@ public class CommunityElections extends SingleAggregateRoot {
             currentElections = new HashMap<>();
             this.elections.put(currentYear, currentElections);
         }
-        Election e = new Election(id, initiator);
+        Election e = new Election(id, congregations.get(initiator));
         currentElections.put(initiator, e);
     }
 
     public void registerMember(MemberId id, int age, CongregationId homeCongregation) {
-        Member m = new Member(id, age, homeCongregation);
+        Member m = new Member(id, age);
         if (members.contains(m)) {
             throw new IllegalArgumentException("Член общины '" + id + "' уже зарегистрирован.");
         }
+        Congregation c = congregations.get(homeCongregation);
+        if (c == null) {
+            throw new IllegalArgumentException("Общины '" + id + "' не существует.");
+        }
         members.add(m);
+        c.members.add(m);
     }
 
     public void establishCongregation(CongregationId id) {
-        // TODO
+        Congregation c = new Congregation(id);
+        if (congregations.containsKey(id)) {
+            throw new IllegalArgumentException("Община '" + id + "' уже зарегистрирована.");
+        }
+        congregations.put(id, c);
     }
 
     public void dissolveCongregation(CongregationId id) {
-        // TODO
+        Congregation c = congregations.remove(id);
+        if (c == null) {
+            return;
+        }
+        for (Map<CongregationId, Election> yearElections : elections.values()) {
+            Election e = yearElections.get(id);
+            if (e != null) {
+                e.cancel();
+            }
+        }
     }
 
     public class Election extends Entity<ElectionId> {
-        private final CongregationId initiator;
+        private final Congregation initiator;
         private final OnlineVoting onlineVoting;
-        private boolean completed;
+        private Status status;
         private final int numberOfVacancies = 5;
 
-        private Election(ElectionId id, CongregationId initiator) {
+        private Election(ElectionId id, Congregation initiator) {
             super(id);
             this.initiator = initiator;
             this.onlineVoting = new OnlineVoting(new OnlineVotingId(id));
-            this.completed = false;
+            this.status = Status.OPEN;
         }
 
         public OnlineVoting onlineVoting() throws DomainRuleViolationException {
-            if (completed) {
+            if (status != Status.OPEN) {
                 throw new DomainRuleViolationException("Онлайн-голосование доступно только если выборы открыты.");
             }
             return onlineVoting;
@@ -96,11 +115,11 @@ public class CommunityElections extends SingleAggregateRoot {
                 throw new DomainRuleViolationException("В качестве потенциальных членов совета"
                         + " должно быть выбрано 5 человек.");
             }
-            completed = true;
+            status = Status.COMPLETED;
         }
 
         void cancel() {
-            // TODO
+            status = Status.CANCELLED;
         }
 
         public class OnlineVoting extends Entity<OnlineVotingId> {
@@ -117,10 +136,7 @@ public class CommunityElections extends SingleAggregateRoot {
                 if (this.votedMembers.contains(voter)) {
                     throw new DomainRuleViolationException("Член общины может голосовать только один раз.");
                 }
-                Collection<Member> congregationMembers = members.stream()
-                        .filter(m -> m.homeCongregation.equals(Election.this.initiator))
-                        .toList();
-                if (congregationMembers.stream().noneMatch(m -> m.id().equals(voter))) {
+                if (Election.this.initiator.members.stream().noneMatch(m -> m.id().equals(voter))) {
                     throw new DomainRuleViolationException("На выборах, инициированных определенной общиной,"
                             + " могут голосовать только члены этой общины.");
                 }
@@ -128,7 +144,7 @@ public class CommunityElections extends SingleAggregateRoot {
                     throw new DomainRuleViolationException("Голосующий должен избрать 5 человек.");
                 }
                 for (MemberId vote : votes) {
-                    Member member = congregationMembers.stream()
+                    Member member = Election.this.initiator.members.stream()
                             .filter(m -> m.id().equals(vote))
                             .findFirst()
                             .orElseThrow(() -> new DomainRuleViolationException("На выборах, инициированных"
@@ -142,23 +158,27 @@ public class CommunityElections extends SingleAggregateRoot {
                 this.votes.addAll(votes);
             }
         }
+
+        private enum Status {
+            OPEN, COMPLETED, CANCELLED
+        }
     }
 
     class Member extends Entity<MemberId> {
         private int age;
-        private CongregationId homeCongregation;
 
-        private Member(MemberId id, int age, CongregationId homeCongregation) {
+        private Member(MemberId id, int age) {
             super(id);
             this.age = age;
-            this.homeCongregation = homeCongregation;
         }
     }
 
     class Congregation extends Entity<CongregationId> {
+        private final Set<Member> members;
 
         public Congregation(CongregationId id) {
             super(id);
+            this.members = new HashSet<>();
         }
     }
 }
