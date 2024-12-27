@@ -62,37 +62,57 @@ public class CommunityElections extends SingleAggregateRoot {
     public class Election extends Entity<ElectionId> {
         private final CongregationId initiator;
         private final OnlineVoting onlineVoting;
+        private boolean completed;
+        private final int numberOfVacancies = 5;
 
         private Election(ElectionId id, CongregationId initiator) {
             super(id);
             this.initiator = initiator;
             this.onlineVoting = new OnlineVoting(new OnlineVotingId(id));
+            this.completed = false;
         }
 
-        public OnlineVoting onlineVoting() {
+        public OnlineVoting onlineVoting() throws DomainRuleViolationException {
+            if (completed) {
+                throw new DomainRuleViolationException("Онлайн-голосование доступно только если выборы открыты.");
+            }
             return onlineVoting;
+        }
+
+        public void complete(Set<MemberId> potentialCouncilMembers) throws DomainRuleViolationException {
+            if (!onlineVoting.votes.containsAll(potentialCouncilMembers)) {
+                throw new DomainRuleViolationException("Потенциальными членами совета общины могут быть только лица,"
+                        + " за которых отдан хотя бы один голос.");
+            }
+            if (potentialCouncilMembers.size() != numberOfVacancies) {
+                throw new DomainRuleViolationException("В качестве потенциальных членов совета"
+                        + " должно быть выбрано 5 человек.");
+            }
+            completed = true;
         }
 
         public class OnlineVoting extends Entity<OnlineVotingId> {
             private final Set<MemberId> votedMembers;
+            private final Set<MemberId> votes;
 
             private OnlineVoting(OnlineVotingId id) {
                 super(id);
                 this.votedMembers = new HashSet<>();
+                this.votes = new HashSet<>();
             }
 
             public void vote(MemberId voter, Set<? extends MemberId> votes) throws DomainRuleViolationException {
-                if (votedMembers.contains(voter)) {
+                if (this.votedMembers.contains(voter)) {
                     throw new DomainRuleViolationException("Член общины может голосовать только один раз.");
                 }
                 Collection<Member> congregationMembers = members.stream()
-                        .filter(m -> m.homeCongregation.equals(initiator))
+                        .filter(m -> m.homeCongregation.equals(Election.this.initiator))
                         .toList();
                 if (congregationMembers.stream().noneMatch(m -> m.id().equals(voter))) {
                     throw new DomainRuleViolationException("На выборах, инициированных определенной общиной,"
                             + " могут голосовать только члены этой общины.");
                 }
-                if (votes.size() != 5) {
+                if (votes.size() != numberOfVacancies) {
                     throw new DomainRuleViolationException("Голосующий должен избрать 5 человек.");
                 }
                 for (MemberId vote : votes) {
@@ -106,7 +126,8 @@ public class CommunityElections extends SingleAggregateRoot {
                                 + " достигшие возраста 21 года.");
                     }
                 }
-                votedMembers.add(voter);
+                this.votedMembers.add(voter);
+                this.votes.addAll(votes);
             }
         }
     }

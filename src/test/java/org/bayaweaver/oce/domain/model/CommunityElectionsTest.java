@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class CommunityElectionsTest {
 
     @Test
-    void generalTest() throws DomainRuleViolationException {
+    void vote() throws DomainRuleViolationException {
         var congregation = new NumericCongregationId(1);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
@@ -72,5 +72,73 @@ public class CommunityElectionsTest {
         var onlineVoting = root.election(id).get().onlineVoting();
         var votes = Set.of(member1, member2, member3, member4, member5);
         assertThrows(DomainRuleViolationException.class, () -> onlineVoting.vote(member1, votes));
+    }
+
+    @Test
+    void complete() throws DomainRuleViolationException {
+        var congregation = new NumericCongregationId(1);
+        var member1 = new NumericMemberId(1);
+        var member2 = new NumericMemberId(2);
+        var member3 = new NumericMemberId(3);
+        var member4 = new NumericMemberId(4);
+        var member5 = new NumericMemberId(5);
+        var id = new NumericElectionId(1);
+        var root = new CommunityElections();
+        root.registerMember(member1, 30, congregation);
+        root.registerMember(member2, 30, congregation);
+        root.registerMember(member3, 30, congregation);
+        root.registerMember(member4, 30, congregation);
+        root.registerMember(member5, 30, congregation);
+        root.initiateElection(id, congregation, Clock.systemDefaultZone());
+        var votes = Set.<MemberId> of(member1, member2, member3, member4, member5);
+        var election = root.election(id).get();
+        election.onlineVoting().vote(member1, votes);
+        assertDoesNotThrow(() -> election.complete(votes));
+    }
+    @Test
+    void completeWhenOtherThan5Persons() throws DomainRuleViolationException {
+        var congregation = new NumericCongregationId(1);
+        var member1 = new NumericMemberId(1);
+        var member2 = new NumericMemberId(2);
+        var member3 = new NumericMemberId(3);
+        var member4 = new NumericMemberId(4);
+        var member5 = new NumericMemberId(5);
+        var id = new NumericElectionId(1);
+        var root = new CommunityElections();
+        root.registerMember(member1, 30, congregation);
+        root.registerMember(member2, 30, congregation);
+        root.registerMember(member3, 30, congregation);
+        root.registerMember(member4, 30, congregation);
+        root.registerMember(member5, 30, congregation);
+        root.initiateElection(id, congregation, Clock.systemDefaultZone());
+        var votes = Set.<MemberId> of(member1, member2, member3, member4, member5);
+        var election = root.election(id).get();
+        election.onlineVoting().vote(member1, votes);
+        var fourMembers = Set.<MemberId> of(member1, member2, member3, member4);
+        assertThrows(DomainRuleViolationException.class, () -> election.complete(fourMembers));
+        var sixMembers = Set.<MemberId> of(member1, member2, member3, member4, member5, new NumericMemberId(6));
+        assertThrows(DomainRuleViolationException.class, () -> election.complete(sixMembers));
+    }
+    @Test
+    void completeWhenOneWithoutAnyVote() throws DomainRuleViolationException {
+        var congregation = new NumericCongregationId(1);
+        var member1 = new NumericMemberId(1);
+        var member2 = new NumericMemberId(2);
+        var member3 = new NumericMemberId(3);
+        var member4 = new NumericMemberId(4);
+        var member5 = new NumericMemberId(5);
+        var id = new NumericElectionId(1);
+        var root = new CommunityElections();
+        root.registerMember(member1, 30, congregation);
+        root.registerMember(member2, 30, congregation);
+        root.registerMember(member3, 30, congregation);
+        root.registerMember(member4, 30, congregation);
+        root.registerMember(member5, 30, congregation);
+        root.initiateElection(id, congregation, Clock.systemDefaultZone());
+        var votes = Set.<MemberId> of(member1, member2, member3, member4, member5);
+        var election = root.election(id).get();
+        election.onlineVoting().vote(member1, votes);
+        var members = Set.<MemberId> of(member2, member3, member4, member5, new NumericMemberId(6));
+        assertThrows(DomainRuleViolationException.class, () -> election.complete(members));
     }
 }
