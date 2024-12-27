@@ -13,14 +13,15 @@ public class CommunityElectionsTest {
 
     @Test
     void vote() throws DomainRuleViolationException {
+        var root = new CommunityElections();
         var congregation = new NumericCongregationId(1);
+        root.establishCongregation(congregation);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
         var member3 = new NumericMemberId(3);
         var member4 = new NumericMemberId(4);
         var member5 = new NumericMemberId(5);
         var id = new NumericElectionId(1);
-        var root = new CommunityElections();
         root.registerMember(member1, 30, congregation);
         root.registerMember(member2, 30, congregation);
         root.registerMember(member3, 30, congregation);
@@ -34,14 +35,15 @@ public class CommunityElectionsTest {
 
     @Test
     void votesBelongToCongregation() throws DomainRuleViolationException {
+        var root = new CommunityElections();
         var congregation = new NumericCongregationId(1);
+        root.establishCongregation(congregation);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
         var member3 = new NumericMemberId(3);
         var member4 = new NumericMemberId(4);
         var member5 = new NumericMemberId(5);
         var id = new NumericElectionId(1);
-        var root = new CommunityElections();
         root.registerMember(member1, 30, congregation);
         root.registerMember(member2, 30, congregation);
         root.registerMember(member3, 30, congregation);
@@ -55,14 +57,15 @@ public class CommunityElectionsTest {
 
     @Test
     void candidateAge21Plus() throws DomainRuleViolationException {
+        var root = new CommunityElections();
         var congregation = new NumericCongregationId(1);
+        root.establishCongregation(congregation);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
         var member3 = new NumericMemberId(3);
         var member4 = new NumericMemberId(4);
         var member5 = new NumericMemberId(5);
         var id = new NumericElectionId(1);
-        var root = new CommunityElections();
         root.registerMember(member1, 30, congregation);
         root.registerMember(member2, 30, congregation);
         root.registerMember(member3, 20, congregation);
@@ -76,14 +79,15 @@ public class CommunityElectionsTest {
 
     @Test
     void complete() throws DomainRuleViolationException {
+        var root = new CommunityElections();
         var congregation = new NumericCongregationId(1);
+        root.establishCongregation(congregation);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
         var member3 = new NumericMemberId(3);
         var member4 = new NumericMemberId(4);
         var member5 = new NumericMemberId(5);
         var id = new NumericElectionId(1);
-        var root = new CommunityElections();
         root.registerMember(member1, 30, congregation);
         root.registerMember(member2, 30, congregation);
         root.registerMember(member3, 30, congregation);
@@ -97,14 +101,15 @@ public class CommunityElectionsTest {
     }
     @Test
     void completeWhenOtherThan5Persons() throws DomainRuleViolationException {
+        var root = new CommunityElections();
         var congregation = new NumericCongregationId(1);
+        root.establishCongregation(congregation);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
         var member3 = new NumericMemberId(3);
         var member4 = new NumericMemberId(4);
         var member5 = new NumericMemberId(5);
         var id = new NumericElectionId(1);
-        var root = new CommunityElections();
         root.registerMember(member1, 30, congregation);
         root.registerMember(member2, 30, congregation);
         root.registerMember(member3, 30, congregation);
@@ -121,14 +126,15 @@ public class CommunityElectionsTest {
     }
     @Test
     void completeWhenOneWithoutAnyVote() throws DomainRuleViolationException {
+        var root = new CommunityElections();
         var congregation = new NumericCongregationId(1);
+        root.establishCongregation(congregation);
         var member1 = new NumericMemberId(1);
         var member2 = new NumericMemberId(2);
         var member3 = new NumericMemberId(3);
         var member4 = new NumericMemberId(4);
         var member5 = new NumericMemberId(5);
         var id = new NumericElectionId(1);
-        var root = new CommunityElections();
         root.registerMember(member1, 30, congregation);
         root.registerMember(member2, 30, congregation);
         root.registerMember(member3, 30, congregation);
@@ -140,5 +146,13 @@ public class CommunityElectionsTest {
         election.onlineVoting().vote(member1, votes);
         var members = Set.<MemberId> of(member2, member3, member4, member5, new NumericMemberId(6));
         assertThrows(DomainRuleViolationException.class, () -> election.complete(members));
+    }
+
+    @Test
+    void congregationNotExist() {
+        var root = new CommunityElections();
+        var congregation = new NumericCongregationId(1);
+        var member1 = new NumericMemberId(1);
+        assertThrows(IllegalArgumentException.class, () -> root.registerMember(member1, 30, congregation));
     }
 }
