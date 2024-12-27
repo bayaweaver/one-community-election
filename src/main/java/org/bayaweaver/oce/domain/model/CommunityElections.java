@@ -59,6 +59,14 @@ public class CommunityElections extends SingleAggregateRoot {
         members.add(m);
     }
 
+    public void establishCongregation(CongregationId id) {
+        // TODO
+    }
+
+    public void dissolveCongregation(CongregationId id) {
+        // TODO
+    }
+
     public class Election extends Entity<ElectionId> {
         private final CongregationId initiator;
         private final OnlineVoting onlineVoting;
@@ -89,6 +97,10 @@ public class CommunityElections extends SingleAggregateRoot {
                         + " должно быть выбрано 5 человек.");
             }
             completed = true;
+        }
+
+        void cancel() {
+            // TODO
         }
 
         public class OnlineVoting extends Entity<OnlineVotingId> {
@@ -140,6 +152,13 @@ public class CommunityElections extends SingleAggregateRoot {
             super(id);
             this.age = age;
             this.homeCongregation = homeCongregation;
+        }
+    }
+
+    class Congregation extends Entity<CongregationId> {
+
+        public Congregation(CongregationId id) {
+            super(id);
         }
     }
 }
