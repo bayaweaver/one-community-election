@@ -132,7 +132,7 @@ public class CommunityElections extends SingleAggregateRoot {
                 this.votes = new HashSet<>();
             }
 
-            public void vote(MemberId voter, Set<? extends MemberId> votes) throws DomainRuleViolationException {
+            public void vote(MemberId voter, Set<MemberId> votes) throws DomainRuleViolationException {
                 if (this.votedMembers.contains(voter)) {
                     throw new DomainRuleViolationException("Член общины может голосовать только один раз.");
                 }
