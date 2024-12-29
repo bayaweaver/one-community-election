@@ -1,4 +1,6 @@
-package org.bayaweaver.oce.domain.model;
+package org.bayaweaver.oce.application;
+
+import org.bayaweaver.oce.domain.model.MemberId;
 
 final class NumericMemberId implements MemberId {
     private final int value;

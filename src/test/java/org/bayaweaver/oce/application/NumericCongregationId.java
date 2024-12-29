@@ -1,9 +1,11 @@
-package org.bayaweaver.oce.domain.model;
+package org.bayaweaver.oce.application;
 
-final class NumericElectionId implements ElectionId {
+import org.bayaweaver.oce.domain.model.CongregationId;
+
+final class NumericCongregationId implements CongregationId {
     private final int value;
 
-    NumericElectionId(int value) {
+    NumericCongregationId(int value) {
         this.value = value;
     }
 
@@ -15,7 +17,7 @@ final class NumericElectionId implements ElectionId {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        NumericElectionId that = (NumericElectionId) o;
+        NumericCongregationId that = (NumericCongregationId) o;
         return value == that.value;
     }
 
