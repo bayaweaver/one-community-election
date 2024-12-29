@@ -29,7 +29,7 @@ public class CommunityElectionsTest {
         root.registerMember(member5, 30, congregation);
         root.initiateElection(id, congregation, Clock.systemDefaultZone());
         var onlineVoting = root.election(id).get().onlineVoting();
-        var votes = Set.of(member1, member2, member3, member4, member5);
+        var votes = Set.<MemberId> of(member1, member2, member3, member4, member5);
         assertDoesNotThrow(() -> onlineVoting.vote(member1, votes));
     }
 
@@ -51,7 +51,7 @@ public class CommunityElectionsTest {
         root.registerMember(member5, 30, congregation);
         root.initiateElection(id, congregation, Clock.systemDefaultZone());
         var onlineVoting = root.election(id).get().onlineVoting();
-        var votes = Set.of(member2, member3, member4, member5, new NumericMemberId(6));
+        var votes = Set.<MemberId> of(member2, member3, member4, member5, new NumericMemberId(6));
         assertThrows(DomainRuleViolationException.class, () -> onlineVoting.vote(member1, votes));
     }
 
@@ -73,7 +73,7 @@ public class CommunityElectionsTest {
         root.registerMember(member5, 30, congregation);
         root.initiateElection(id, congregation, Clock.systemDefaultZone());
         var onlineVoting = root.election(id).get().onlineVoting();
-        var votes = Set.of(member1, member2, member3, member4, member5);
+        var votes = Set.<MemberId> of(member1, member2, member3, member4, member5);
         assertThrows(DomainRuleViolationException.class, () -> onlineVoting.vote(member1, votes));
     }
 
