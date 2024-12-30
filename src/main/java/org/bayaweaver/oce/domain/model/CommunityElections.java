@@ -80,7 +80,7 @@ public class CommunityElections extends SingleAggregateRoot {
         }
         for (Map<CongregationId, Election> yearElections : elections.values()) {
             Election e = yearElections.get(id);
-            if (e != null) {
+            if (e != null && e.status == Election.Status.OPEN) {
                 e.cancel();
             }
         }
