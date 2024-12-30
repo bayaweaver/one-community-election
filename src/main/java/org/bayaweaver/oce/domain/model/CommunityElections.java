@@ -57,7 +57,7 @@ public class CommunityElections extends SingleAggregateRoot {
                 super(id);
             }
 
-            public void vote(MemberId voter, Set<? extends MemberId> votes) throws DomainRuleViolationException {
+            public void vote(MemberId voter, Set<MemberId> votes) throws DomainRuleViolationException {
                 // TODO
             }
         }
