@@ -1,6 +1,7 @@
 package org.bayaweaver.oce.application;
 
 import org.bayaweaver.oce.domain.model.CommunityElections;
+import org.bayaweaver.oce.domain.model.CommunityElectionsRepository;
 import org.bayaweaver.oce.domain.model.CongregationId;
 import org.bayaweaver.oce.domain.model.ElectionId;
 import org.bayaweaver.oce.domain.model.ElectionIdPool;
@@ -15,12 +16,12 @@ import java.util.Set;
 public class Service {
     private final Clock clock;
     private final ElectionIdPool electionIdPool;
-    private final CommunityElections communityElections;
+    private final CommunityElectionsRepository repository;
 
-    public Service(Clock clock, ElectionIdPool electionIdPool) {
+    public Service(Clock clock, ElectionIdPool electionIdPool, CommunityElectionsRepository repository) {
         this.clock = clock;
         this.electionIdPool = electionIdPool;
-        this.communityElections = new CommunityElections();
+        this.repository = repository;
     }
 
     @Transactional
@@ -31,6 +32,7 @@ public class Service {
             throw new ApplicationException("Идентификатор общины не указан.");
         }
         ElectionId id = electionIdPool.nextId();
+        CommunityElections communityElections = repository.get();
         communityElections.initiateElection(id, initiator, clock);
         return id;
     }
@@ -43,6 +45,7 @@ public class Service {
         if (homeCongregation == null) {
             throw new ApplicationException("Идентификатор общины не указан.");
         }
+        CommunityElections communityElections = repository.get();
         communityElections.registerMember(id, age, homeCongregation);
     }
 
@@ -51,6 +54,7 @@ public class Service {
         if (id == null) {
             throw new ApplicationException("Идентификатор общины не указан.");
         }
+        CommunityElections communityElections = repository.get();
         communityElections.establishCongregation(id);
     }
 
@@ -59,6 +63,7 @@ public class Service {
         if (id == null) {
             throw new ApplicationException("Идентификатор общины не указан.");
         }
+        CommunityElections communityElections = repository.get();
         communityElections.dissolveCongregation(id);
     }
 
@@ -91,6 +96,7 @@ public class Service {
         if (id == null) {
             throw new ApplicationException("Идентификатор выборов не указан.");
         }
+        CommunityElections communityElections = repository.get();
         return communityElections
                 .election(id)
                 .orElseThrow(() -> new ApplicationException("Election '" + id + "' was not found."));

@@ -2,6 +2,7 @@ package org.bayaweaver.oce.application;
 
 import org.bayaweaver.oce.domain.model.MemberId;
 import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
+import org.bayaweaver.oce.domain.model.InMemoryCommunityElectionsRepository;
 import org.bayaweaver.oce.infrastructure.NumericElectionIdPool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,8 @@ public class ServiceTest {
     
     @BeforeEach
     void initialize() {
-        service = new Service(Clock.systemDefaultZone(), new NumericElectionIdPool());
+        var repository = new InMemoryCommunityElectionsRepository();
+        this.service = new Service(Clock.systemDefaultZone(), new NumericElectionIdPool(), repository);
     }
 
     @Test

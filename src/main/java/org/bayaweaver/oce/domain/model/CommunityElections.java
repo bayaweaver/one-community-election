@@ -17,7 +17,7 @@ public class CommunityElections extends SingleAggregateRoot {
     private final Set<Member> members;
     private final Map<CongregationId, Congregation> congregations;
 
-    public CommunityElections() {
+    CommunityElections() {
         this.elections = new HashMap<>();
         this.members = new HashSet<>();
         this.congregations = new HashMap<>();
