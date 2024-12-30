@@ -7,6 +7,7 @@ import org.bayaweaver.oce.domain.model.ElectionIdPool;
 import org.bayaweaver.oce.domain.model.MemberId;
 import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
 
+import javax.transaction.Transactional;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.Set;
@@ -22,6 +23,7 @@ public class Service {
         this.communityElections = new CommunityElections();
     }
 
+    @Transactional
     public ElectionId initiateElection(CongregationId initiator)
             throws DomainRuleViolationException {
 
@@ -33,6 +35,7 @@ public class Service {
         return id;
     }
 
+    @Transactional
     public void registerMember(MemberId id, int age, CongregationId homeCongregation) {
         if (id == null) {
             throw new ApplicationException("Идентификатор члена общины не указан.");
@@ -43,6 +46,7 @@ public class Service {
         communityElections.registerMember(id, age, homeCongregation);
     }
 
+    @Transactional
     public void establishCongregation(CongregationId id) {
         if (id == null) {
             throw new ApplicationException("Идентификатор общины не указан.");
@@ -50,6 +54,7 @@ public class Service {
         communityElections.establishCongregation(id);
     }
 
+    @Transactional
     public void dissolveCongregation(CongregationId id) {
         if (id == null) {
             throw new ApplicationException("Идентификатор общины не указан.");
@@ -57,6 +62,7 @@ public class Service {
         communityElections.dissolveCongregation(id);
     }
 
+    @Transactional
     public void completeElection(ElectionId id, Set<MemberId> potentialCouncilMembers)
             throws DomainRuleViolationException {
 
@@ -67,6 +73,7 @@ public class Service {
         election.complete(potentialCouncilMembers);
     }
 
+    @Transactional
     public void voteIn(ElectionId electionId, MemberId voterId, Set<MemberId> votes)
             throws DomainRuleViolationException {
 
