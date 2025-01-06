@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class CommunityElections extends SingleAggregateRoot {
-    private final Map<Year, Map<CongregationId, Election>> elections;
+    private final Map<CongregationId, Election> elections;
     private final Set<Member> members;
     private final Map<CongregationId, Congregation> congregations;
     private Year currentYear;
@@ -28,43 +28,34 @@ public class CommunityElections extends SingleAggregateRoot {
         if (year.getValue() <= currentYear.getValue()) {
             throw new DomainRuleViolationException("Новый избирательный год должен начинаться после текущего.");
         }
-        for (Map<CongregationId, Election> yearElections : elections.values()) {
-            for (Election election : yearElections.values()) {
-                if (election.status == Election.Status.OPEN) {
-                    throw new DomainRuleViolationException("Перед началом нового избирательного года все выборы"
-                            + " предыдущего года должны быть или завершены, или отменены.");
-                }
+        for (Election election : elections.values()) {
+            if (election.status == Election.Status.OPEN) {
+                throw new DomainRuleViolationException("Перед началом нового избирательного года все выборы"
+                        + " предыдущего года должны быть или завершены, или отменены.");
             }
         }
         currentYear = year;
+        elections.clear();
     }
 
-    public Optional<Election> election(ElectionId id) {
-        for (Map<CongregationId, Election> elections : this.elections.values()) {
-            for (Election election : elections.values()) {
-                if (election.id().equals(id)) {
-                    return Optional.of(election);
-                }
+    public Election election(ElectionId id) {
+        for (Election election : elections.values()) {
+            if (election.id().equals(id)) {
+                return election;
             }
         }
-        return Optional.empty();
+        throw new IllegalArgumentException("Выборы или недоступны в текущем году, или не существуют.");
     }
 
     public void initiateElection(ElectionId id, CongregationId initiator)
             throws DomainRuleViolationException {
 
-        Map<CongregationId, Election> currentElections = this.elections.get(currentYear);
-        if (currentElections != null) {
-            if (currentElections.containsKey(initiator)) {
-                throw new DomainRuleViolationException("Община ранее инициировавшая выборы,"
-                        + " не может инициировать их повторно.");
-            }
-        } else {
-            currentElections = new HashMap<>();
-            this.elections.put(currentYear, currentElections);
+        if (elections.containsKey(initiator)) {
+            throw new DomainRuleViolationException("Община ранее инициировавшая выборы,"
+                    + " не может инициировать их повторно.");
         }
         Election e = new Election(id, congregations.get(initiator));
-        currentElections.put(initiator, e);
+        elections.put(initiator, e);
     }
 
     public void registerMember(MemberId id, int age, CongregationId homeCongregation) {
@@ -93,11 +84,9 @@ public class CommunityElections extends SingleAggregateRoot {
         if (c == null) {
             return;
         }
-        for (Map<CongregationId, Election> yearElections : elections.values()) {
-            Election e = yearElections.get(id);
-            if (e != null && e.status == Election.Status.OPEN) {
-                e.cancel();
-            }
+        Election e = elections.get(id);
+        if (e != null && e.status == Election.Status.OPEN) {
+            e.cancel();
         }
     }
 

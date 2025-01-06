@@ -101,8 +101,10 @@ public class Service {
             throw new ApplicationException("Идентификатор выборов не указан.");
         }
         CommunityElections communityElections = repository.get();
-        return communityElections
-                .election(id)
-                .orElseThrow(() -> new ApplicationException("Election '" + id + "' was not found."));
+        try {
+            return communityElections.election(id);
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationException(e.getMessage());
+        }
     }
 }
