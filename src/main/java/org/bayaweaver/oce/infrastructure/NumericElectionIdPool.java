@@ -1,7 +1,7 @@
 package org.bayaweaver.oce.infrastructure;
 
-import org.bayaweaver.oce.domain.model.ElectionId;
-import org.bayaweaver.oce.domain.model.ElectionIdPool;
+import org.bayaweaver.oce.domain.model.elections.ElectionId;
+import org.bayaweaver.oce.domain.model.elections.ElectionIdPool;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

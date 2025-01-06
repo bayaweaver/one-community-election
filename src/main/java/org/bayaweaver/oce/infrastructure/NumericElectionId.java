@@ -1,6 +1,6 @@
 package org.bayaweaver.oce.infrastructure;
 
-import org.bayaweaver.oce.domain.model.ElectionId;
+import org.bayaweaver.oce.domain.model.elections.ElectionId;
 
 public final class NumericElectionId implements ElectionId {
     private final int value;

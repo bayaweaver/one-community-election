@@ -1,4 +1,4 @@
-package org.bayaweaver.oce.domain.model;
+package org.bayaweaver.oce.domain.model.community;
 
 import org.bayaweaver.oce.domain.model.common.Identifier;
 

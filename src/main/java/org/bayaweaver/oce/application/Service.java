@@ -2,10 +2,10 @@ package org.bayaweaver.oce.application;
 
 import org.bayaweaver.oce.domain.model.CommunityElections;
 import org.bayaweaver.oce.domain.model.CommunityElectionsRepository;
-import org.bayaweaver.oce.domain.model.CongregationId;
-import org.bayaweaver.oce.domain.model.ElectionId;
-import org.bayaweaver.oce.domain.model.ElectionIdPool;
-import org.bayaweaver.oce.domain.model.MemberId;
+import org.bayaweaver.oce.domain.model.community.CongregationId;
+import org.bayaweaver.oce.domain.model.elections.ElectionId;
+import org.bayaweaver.oce.domain.model.elections.ElectionIdPool;
+import org.bayaweaver.oce.domain.model.community.MemberId;
 import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
 
 import javax.transaction.Transactional;
