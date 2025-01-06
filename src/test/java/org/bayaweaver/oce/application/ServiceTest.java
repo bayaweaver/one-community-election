@@ -1,13 +1,13 @@
 package org.bayaweaver.oce.application;
 
+import org.bayaweaver.oce.domain.model.InMemoryCommunityElectionsRepository;
 import org.bayaweaver.oce.domain.model.MemberId;
 import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
-import org.bayaweaver.oce.domain.model.InMemoryCommunityElectionsRepository;
 import org.bayaweaver.oce.infrastructure.NumericElectionIdPool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Clock;
+import java.time.Year;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +22,7 @@ public class ServiceTest {
     @BeforeEach
     void initialize() {
         var repository = new InMemoryCommunityElectionsRepository();
-        this.service = new Service(Clock.systemDefaultZone(), new NumericElectionIdPool(), repository);
+        this.service = new Service(new NumericElectionIdPool(), repository);
     }
 
     @Test
@@ -180,5 +180,31 @@ public class ServiceTest {
                 DomainRuleViolationException.class,
                 () -> service.voteIn(id, members.get(1), new HashSet<>(members)));
         assertTrue(exception.getMessage().contains("Онлайн-голосование") && exception.getMessage().contains("открыт"));
+    }
+
+    @Test
+    void allElectionsAreCompletedBeforeNewYear() throws DomainRuleViolationException {
+        var congregation = new NumericCongregationId(1);
+        service.establishCongregation(congregation);
+        var member1 = new NumericMemberId(1);
+        var member2 = new NumericMemberId(2);
+        var member3 = new NumericMemberId(3);
+        var member4 = new NumericMemberId(4);
+        var member5 = new NumericMemberId(5);
+        final var age = 30;
+        service.registerMember(member1, age, congregation);
+        service.registerMember(member2, age, congregation);
+        service.registerMember(member3, age, congregation);
+        service.registerMember(member4, age, congregation);
+        service.registerMember(member5, age, congregation);
+        var id = service.initiateElection(congregation);
+        var votes = Set.<MemberId> of(member1, member2, member3, member4, member5);
+        assertDoesNotThrow(() -> service.voteIn(id, member1, votes));
+        final var nextYear = Year.now().plusYears(1);
+        assertThrows(DomainRuleViolationException.class, () -> service.beginNewElectionYear(nextYear));
+        service.completeElection(id, votes);
+        assertDoesNotThrow(() -> service.beginNewElectionYear(nextYear));
+        final var prevYear = Year.now().minusYears(1);
+        assertThrows(DomainRuleViolationException.class, () -> service.beginNewElectionYear(prevYear));
     }
 }

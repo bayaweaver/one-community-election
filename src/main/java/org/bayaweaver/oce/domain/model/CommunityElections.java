@@ -4,7 +4,6 @@ import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
 import org.bayaweaver.oce.domain.model.common.Entity;
 import org.bayaweaver.oce.domain.model.common.SingleAggregateRoot;
 
-import java.time.Clock;
 import java.time.Year;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,11 +15,28 @@ public class CommunityElections extends SingleAggregateRoot {
     private final Map<Year, Map<CongregationId, Election>> elections;
     private final Set<Member> members;
     private final Map<CongregationId, Congregation> congregations;
+    private Year currentYear;
 
-    CommunityElections() {
+    CommunityElections(Year currentYear) {
+        this.currentYear = currentYear;
         this.elections = new HashMap<>();
         this.members = new HashSet<>();
         this.congregations = new HashMap<>();
+    }
+
+    public void beginNewElectionYear(Year year) throws DomainRuleViolationException {
+        if (year.getValue() <= currentYear.getValue()) {
+            throw new DomainRuleViolationException("Новый избирательный год должен начинаться после текущего.");
+        }
+        for (Map<CongregationId, Election> yearElections : elections.values()) {
+            for (Election election : yearElections.values()) {
+                if (election.status == Election.Status.OPEN) {
+                    throw new DomainRuleViolationException("Перед началом нового избирательного года все выборы"
+                            + " предыдущего года должны быть или завершены, или отменены.");
+                }
+            }
+        }
+        currentYear = year;
     }
 
     public Optional<Election> election(ElectionId id) {
@@ -34,10 +50,9 @@ public class CommunityElections extends SingleAggregateRoot {
         return Optional.empty();
     }
 
-    public void initiateElection(ElectionId id, CongregationId initiator, Clock clock)
+    public void initiateElection(ElectionId id, CongregationId initiator)
             throws DomainRuleViolationException {
 
-        Year currentYear = Year.now(clock);
         Map<CongregationId, Election> currentElections = this.elections.get(currentYear);
         if (currentElections != null) {
             if (currentElections.containsKey(initiator)) {

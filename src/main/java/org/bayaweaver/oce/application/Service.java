@@ -9,17 +9,15 @@ import org.bayaweaver.oce.domain.model.MemberId;
 import org.bayaweaver.oce.domain.model.common.DomainRuleViolationException;
 
 import javax.transaction.Transactional;
-import java.time.Clock;
+import java.time.Year;
 import java.util.Collections;
 import java.util.Set;
 
 public class Service {
-    private final Clock clock;
     private final ElectionIdPool electionIdPool;
     private final CommunityElectionsRepository repository;
 
-    public Service(Clock clock, ElectionIdPool electionIdPool, CommunityElectionsRepository repository) {
-        this.clock = clock;
+    public Service(ElectionIdPool electionIdPool, CommunityElectionsRepository repository) {
         this.electionIdPool = electionIdPool;
         this.repository = repository;
     }
@@ -33,7 +31,7 @@ public class Service {
         }
         ElectionId id = electionIdPool.nextId();
         CommunityElections communityElections = repository.get();
-        communityElections.initiateElection(id, initiator, clock);
+        communityElections.initiateElection(id, initiator);
         return id;
     }
 
@@ -90,6 +88,12 @@ public class Service {
         }
         CommunityElections.Election election = findElection(electionId);
         election.onlineVoting().vote(voterId, votes);
+    }
+
+    @Transactional
+    public void beginNewElectionYear(Year year) throws DomainRuleViolationException {
+        CommunityElections communityElections = repository.get();
+        communityElections.beginNewElectionYear(year);
     }
 
     private CommunityElections.Election findElection(ElectionId id) {
